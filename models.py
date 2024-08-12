@@ -3,9 +3,12 @@ import torch
 from torchvision import models
 import torchvision
 from torch.nn import functional as F
-import torchvision.models
-from torchvision.models.resnet import model_urls
+import torchvision.models as models
+from torchvision.models.resnet import ResNet, BasicBlock
 
+model_urls = {
+    'resnet34': 'http://download.pytorch.org/models/resnet34-333f7ec4.pth'
+}
 
 
 def conv3x3(in_, out):
@@ -55,14 +58,19 @@ class DecoderBlockLinkNet(nn.Module):
         x = self.relu(x)
         return x
 
+
 class LinkNet34(nn.Module):
     def __init__(self, num_classes=1, num_channels=3, pretrained=True):
         super().__init__()
         assert num_channels == 3
         self.num_classes = num_classes
         filters = [64, 128, 256, 512]
-        model_urls['resnet34'] = model_urls['resnet34'].replace('https://', 'http://')
-        resnet = models.resnet34(pretrained=pretrained)
+
+        # fixed
+        resnet = models.resnet34(pretrained=False)
+        if pretrained:
+            state_dict = torch.hub.load_state_dict_from_url(model_urls['resnet34'])
+            resnet.load_state_dict(state_dict)
 
         # vgg16 = torchvision.models.vgg16(pretrained=True)
 
